@@ -1,104 +1,104 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { motion } from "framer-motion"
-import PokemonCard from "@/components/pokemon-card"
-import PokemonCardSkeleton from "@/components/pokemon-card-skeleton"
-import { loadFavorites, saveFavorites } from "@/lib/cookies"
+import PokemonCard from '@/components/ui/PokemonCard';
+import PokemonCardSkeleton from '@/components/ui/PokemonCardSkeleton';
+import { loadFavorites, saveFavorites } from '@/lib/cookies';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface PokemonDetails {
-  id: number
-  name: string
+  id: number;
+  name: string;
   types: {
-    slot: number
+    slot: number;
     type: {
-      name: string
-    }
-  }[]
+      name: string;
+    };
+  }[];
   sprites?: {
     other: {
-      "official-artwork": {
-        front_default: string
-      }
-    }
-  }
+      'official-artwork': {
+        front_default: string;
+      };
+    };
+  };
 }
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [isClient, setIsClient] = useState(false)
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   // Load favorites on mount and when localStorage changes
   useEffect(() => {
     const loadFavoritesData = () => {
-      const storedFavorites = loadFavorites()
-      setFavorites(storedFavorites)
-      console.log("Loaded favorites:", storedFavorites)
-    }
+      const storedFavorites = loadFavorites();
+      setFavorites(storedFavorites);
+      console.log('Loaded favorites:', storedFavorites);
+    };
 
     // Mark that we're client-side
-    setIsClient(true)
+    setIsClient(true);
 
     // Load favorites initially
-    loadFavoritesData()
+    loadFavoritesData();
 
     // Set up event listener for storage changes
     const handleStorageChange = () => {
-      loadFavoritesData()
-    }
+      loadFavoritesData();
+    };
 
-    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange)
-    }
-  }, [])
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const {
     data: pokemonDetails,
     isLoading,
     refetch,
   } = useQuery<Record<string, PokemonDetails>>({
-    queryKey: ["favoritePokemonDetails", favorites],
+    queryKey: ['favoritePokemonDetails', favorites],
     queryFn: async () => {
-      if (favorites.length === 0) return {}
+      if (favorites.length === 0) return {};
 
-      const details: Record<string, PokemonDetails> = {}
+      const details: Record<string, PokemonDetails> = {};
 
       await Promise.all(
         favorites.map(async (pokemonName) => {
-          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
           if (!response.ok) {
-            throw new Error(`Failed to fetch details for ${pokemonName}`)
+            throw new Error(`Failed to fetch details for ${pokemonName}`);
           }
-          const data = await response.json()
+          const data = await response.json();
           details[pokemonName] = {
             id: data.id,
             name: data.name,
             types: data.types,
             sprites: data.sprites,
-          }
-        }),
-      )
+          };
+        })
+      );
 
-      return details
+      return details;
     },
     enabled: isClient && favorites.length > 0,
-  })
+  });
 
   const handleRemoveFavorite = (pokemonName: string) => {
     // Update local state immediately
-    setFavorites((prev) => prev.filter((name) => name !== pokemonName))
+    setFavorites((prev) => prev.filter((name) => name !== pokemonName));
 
     // Update localStorage
-    const currentFavorites = loadFavorites()
-    const newFavorites = currentFavorites.filter((name) => name !== pokemonName)
-    saveFavorites(newFavorites)
+    const currentFavorites = loadFavorites();
+    const newFavorites = currentFavorites.filter((name) => name !== pokemonName);
+    saveFavorites(newFavorites);
 
     // Trigger a storage event for other components to detect the change
-    window.dispatchEvent(new Event("storage"))
-  }
+    window.dispatchEvent(new Event('storage'));
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -108,12 +108,12 @@ export default function FavoritesPage() {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const item = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 },
-  }
+  };
 
   // Don't render anything during SSR to avoid hydration mismatch
   if (!isClient) {
@@ -126,7 +126,7 @@ export default function FavoritesPage() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -142,9 +142,7 @@ export default function FavoritesPage() {
       ) : favorites.length === 0 ? (
         <div className="text-center py-20">
           <h2 className="text-xl font-medium mb-2">No favorites yet</h2>
-          <p className="text-muted-foreground">
-            Visit a Pokémon's page and click the favorite button to add it to your favorites.
-          </p>
+          <p className="text-muted-foreground">Visit a Pokémon's page and click the favorite button to add it to your favorites.</p>
         </div>
       ) : (
         <motion.div
@@ -154,8 +152,8 @@ export default function FavoritesPage() {
           animate="show"
         >
           {favorites.map((pokemonName) => {
-            const details = pokemonDetails?.[pokemonName]
-            if (!details) return <PokemonCardSkeleton key={pokemonName} />
+            const details = pokemonDetails?.[pokemonName];
+            if (!details) return <PokemonCardSkeleton key={pokemonName} />;
 
             return (
               <motion.div key={pokemonName} variants={item}>
@@ -167,11 +165,10 @@ export default function FavoritesPage() {
                   onRemoveFavorite={() => handleRemoveFavorite(pokemonName)}
                 />
               </motion.div>
-            )
+            );
           })}
         </motion.div>
       )}
     </div>
-  )
+  );
 }
-

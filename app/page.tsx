@@ -1,10 +1,10 @@
 'use client';
 
 import HomeHeader from '@/components/HomeHeader';
-import PokemonCard from '@/components/pokemon-card';
-import PokemonCardSkeleton from '@/components/pokemon-card-skeleton';
 import { Button } from '@/components/ui/button';
-import { useGetPokemons } from '@/hooks/useGetPokemons';
+import { useGetPokemons } from '@/components/ui/hooks/useGetPokemons';
+import PokemonCard from '@/components/ui/PokemonCard';
+import PokemonCardSkeleton from '@/components/ui/PokemonCardSkeleton';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 

@@ -160,7 +160,7 @@ export default function PokemonDetailsPage() {
   ];
 
   return (
-    <div className="container px-4 sm:px-6 py-6 sm:py-8 md:py-12 ">
+    <div className="container px-4 sm:px-6 py-6 sm:py-8 md:py-6 ">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 ">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="mr-2 h-4 w-4" />
