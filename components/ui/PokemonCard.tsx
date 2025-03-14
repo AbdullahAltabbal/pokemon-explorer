@@ -11,6 +11,14 @@ type PokemonCardProps = {
   name: string;
   id: number;
   image: string;
+  types?: string[];
+  sprites?: {
+    other: {
+      'official-artwork': {
+        front_default: string;
+      };
+    };
+  };
   onRemoveFavorite?(): void;
 };
 
