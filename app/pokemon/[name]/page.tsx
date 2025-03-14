@@ -1,162 +1,144 @@
-"use client"
+'use client';
 
-import { useQuery } from "@tanstack/react-query"
-import { useParams } from "next/navigation"
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { Loader2, ArrowLeft, Heart } from "lucide-react"
-import Link from "next/link"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Navigation, Pagination } from "swiper/modules"
-import { useState, useEffect } from "react"
-import { loadFavorites, saveFavorites } from "@/lib/cookies"
-import { toast } from "@/hooks/use-toast"
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { loadFavorites, saveFavorites } from '@/lib/cookies';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Heart, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 // Import Swiper styles
-import "swiper/css"
-import "swiper/css/navigation"
-import "swiper/css/pagination"
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface PokemonDetails {
-  id: number
-  name: string
-  height: number
-  weight: number
+  id: number;
+  name: string;
+  height: number;
+  weight: number;
   types: {
-    slot: number
+    slot: number;
     type: {
-      name: string
-    }
-  }[]
+      name: string;
+    };
+  }[];
   abilities: {
     ability: {
-      name: string
-    }
-    is_hidden: boolean
-  }[]
+      name: string;
+    };
+    is_hidden: boolean;
+  }[];
   stats: {
-    base_stat: number
+    base_stat: number;
     stat: {
-      name: string
-    }
-  }[]
+      name: string;
+    };
+  }[];
   sprites: {
-    front_default: string
-    back_default: string
-    front_shiny: string
-    back_shiny: string
     other: {
-      "official-artwork": {
-        front_default: string
-      }
-      home: {
-        front_default: string
-      }
+      'official-artwork': {
+        front_default: string;
+      };
       dream_world: {
-        front_default: string
-      }
-    }
-  }
+        front_default: string;
+      };
+    };
+  };
 }
 
+const typeColors: Record<string, string> = {
+  normal: 'bg-gray-400',
+  fire: 'bg-orange-500',
+  water: 'bg-blue-500',
+  electric: 'bg-yellow-400',
+  grass: 'bg-green-500',
+  ice: 'bg-blue-300',
+  fighting: 'bg-red-700',
+  poison: 'bg-purple-500',
+  ground: 'bg-amber-600',
+  flying: 'bg-indigo-300',
+  psychic: 'bg-pink-500',
+  bug: 'bg-lime-500',
+  rock: 'bg-yellow-700',
+  ghost: 'bg-purple-700',
+  dragon: 'bg-indigo-700',
+  dark: 'bg-gray-700',
+  steel: 'bg-gray-500',
+  fairy: 'bg-pink-300',
+};
+
+const formatStatName = (stat: string) => {
+  switch (stat) {
+    case 'hp':
+      return 'HP';
+    case 'attack':
+      return 'Attack';
+    case 'defense':
+      return 'Defense';
+    case 'special-attack':
+      return 'Sp. Atk';
+    case 'special-defense':
+      return 'Sp. Def';
+    case 'speed':
+      return 'Speed';
+    default:
+      return stat;
+  }
+};
+
 export default function PokemonDetailsPage() {
-  const { name } = useParams<{ name: string }>()
-  const [isFavorite, setIsFavorite] = useState(false)
+  const { name } = useParams<{ name: string }>();
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     // This needs to run client-side only
-    if (typeof window !== "undefined") {
-      const favorites = loadFavorites()
-      setIsFavorite(favorites.includes(name))
+    if (typeof window !== 'undefined') {
+      const favorites = loadFavorites();
+      setIsFavorite(favorites.includes(name));
     }
-  }, [name])
+  }, [name]);
 
   const toggleFavorite = () => {
-    const favorites = loadFavorites()
-    let newFavorites: string[]
+    const favorites = loadFavorites();
+    let newFavorites: string[];
 
     if (isFavorite) {
-      newFavorites = favorites.filter((n) => n !== name)
-      toast({
-        title: "Removed from favorites",
-        description: `${name.charAt(0).toUpperCase() + name.slice(1)} has been removed from your favorites.`,
-      })
-    } else {
-      newFavorites = [...favorites, name]
-      toast({
-        title: "Added to favorites",
-        description: `${name.charAt(0).toUpperCase() + name.slice(1)} has been added to your favorites.`,
-      })
-    }
+      newFavorites = favorites.filter((n) => n !== name);
+    } else newFavorites = [...favorites, name];
 
-    saveFavorites(newFavorites)
-    setIsFavorite(!isFavorite)
+    saveFavorites(newFavorites);
+    setIsFavorite(!isFavorite);
 
     // Trigger a storage event for other components to detect the change
-    window.dispatchEvent(new Event("storage"))
-  }
+    window.dispatchEvent(new Event('storage'));
+  };
 
   const { data, isLoading, error } = useQuery<PokemonDetails>({
-    queryKey: ["pokemon", name],
+    queryKey: ['pokemon', name],
     queryFn: async () => {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch Pokémon details")
+        throw new Error('Failed to fetch Pokémon details');
       }
-      return response.json()
+      return response.json();
     },
-  })
-
-  const typeColors: Record<string, string> = {
-    normal: "bg-gray-400",
-    fire: "bg-orange-500",
-    water: "bg-blue-500",
-    electric: "bg-yellow-400",
-    grass: "bg-green-500",
-    ice: "bg-blue-300",
-    fighting: "bg-red-700",
-    poison: "bg-purple-500",
-    ground: "bg-amber-600",
-    flying: "bg-indigo-300",
-    psychic: "bg-pink-500",
-    bug: "bg-lime-500",
-    rock: "bg-yellow-700",
-    ghost: "bg-purple-700",
-    dragon: "bg-indigo-700",
-    dark: "bg-gray-700",
-    steel: "bg-gray-500",
-    fairy: "bg-pink-300",
-  }
-
-  const formatStatName = (stat: string) => {
-    switch (stat) {
-      case "hp":
-        return "HP"
-      case "attack":
-        return "Attack"
-      case "defense":
-        return "Defense"
-      case "special-attack":
-        return "Sp. Atk"
-      case "special-defense":
-        return "Sp. Def"
-      case "speed":
-        return "Speed"
-      default:
-        return stat
-    }
-  }
+  });
 
   if (isLoading) {
     return (
       <div className="container py-8 flex justify-center items-center min-h-[50vh]">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
-    )
+    );
   }
 
   if (error || !data) {
@@ -168,16 +150,13 @@ export default function PokemonDetailsPage() {
           <Link href="/">Go Back Home</Link>
         </Button>
       </div>
-    )
+    );
   }
 
   const images = [
-    { url: data.sprites.other["official-artwork"].front_default, label: "Official Artwork" },
-    { url: data.sprites.front_default, label: "Front Default" },
-    { url: data.sprites.back_default, label: "Back Default" },
-    { url: data.sprites.front_shiny, label: "Front Shiny" },
-    { url: data.sprites.back_shiny, label: "Back Shiny" },
-  ].filter((img) => img.url)
+    { url: data.sprites.other['official-artwork'].front_default, label: 'Official Artwork' },
+    { url: data.sprites.other['dream_world'].front_default, label: 'Dream World' },
+  ];
 
   return (
     <div className="container px-4 sm:px-6 py-6 sm:py-8 md:py-12">
@@ -187,42 +166,21 @@ export default function PokemonDetailsPage() {
           Back to Home
         </Link>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={toggleFavorite}
-          className="flex items-center gap-1 w-full sm:w-auto"
-        >
-          <Heart className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
-          {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+        <Button variant="outline" size="sm" onClick={toggleFavorite} className="flex items-center gap-1 w-full sm:w-auto">
+          <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+          {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-20">
         {/* Image Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="order-1 md:order-1"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="order-1 md:order-1">
           <div className="bg-muted rounded-lg p-4 sm:p-6 h-full">
-            <Swiper
-              modules={[Navigation, Pagination]}
-              navigation
-              pagination={{ clickable: true }}
-              className="h-full"
-              spaceBetween={20}
-            >
+            <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="h-full" spaceBetween={20}>
               {images.map((image, index) => (
                 <SwiperSlide key={index} className="flex flex-col items-center justify-center">
                   <div className="relative aspect-square w-full max-w-[300px] mx-auto">
-                    <Image
-                      src={image.url || "/placeholder.svg"}
-                      alt={`${data.name} - ${image.label}`}
-                      fill
-                      className="object-contain"
-                    />
+                    <Image src={image.url || '/placeholder.svg'} alt={`${data.name} - ${image.label}`} fill className="object-contain" />
                   </div>
                   <p className="text-center mt-4 text-sm text-muted-foreground">{image.label}</p>
                 </SwiperSlide>
@@ -240,11 +198,11 @@ export default function PokemonDetailsPage() {
         >
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground">#{data.id.toString().padStart(3, "0")}</p>
+              <p className="text-sm text-muted-foreground">#{data.id.toString().padStart(3, '0')}</p>
               <h1 className="text-3xl md:text-4xl font-bold capitalize">{data.name}</h1>
               <div className="flex flex-wrap gap-2 mt-3">
                 {data.types.map((type) => (
-                  <Badge key={type.type.name} className={`${typeColors[type.type.name] || "bg-gray-500"} text-white`}>
+                  <Badge key={type.type.name} className={`${typeColors[type.type.name] || 'bg-gray-500'} text-white`}>
                     {type.type.name}
                   </Badge>
                 ))}
@@ -287,7 +245,7 @@ export default function PokemonDetailsPage() {
                 <ul className="space-y-2">
                   {data.abilities.map((ability) => (
                     <li key={ability.ability.name} className="flex items-center">
-                      <span className="capitalize">{ability.ability.name.replace("-", " ")}</span>
+                      <span className="capitalize">{ability.ability.name.replace('-', ' ')}</span>
                       {ability.is_hidden && (
                         <Badge variant="outline" className="ml-2 text-xs">
                           Hidden
@@ -302,6 +260,5 @@ export default function PokemonDetailsPage() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
-
