@@ -25,6 +25,7 @@ interface PokemonDetails {
   name: string;
   height: number;
   weight: number;
+  base_experience: number;
   types: {
     slot: number;
     type: {
@@ -85,9 +86,9 @@ const formatStatName = (stat: string) => {
     case 'defense':
       return 'Defense';
     case 'special-attack':
-      return 'Sp. Atk';
+      return 'Special Attack';
     case 'special-defense':
-      return 'Sp. Def';
+      return 'Special Defense';
     case 'speed':
       return 'Speed';
     default:
@@ -159,8 +160,8 @@ export default function PokemonDetailsPage() {
   ];
 
   return (
-    <div className="container px-4 sm:px-6 py-6 sm:py-8 md:py-12">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="container px-4 sm:px-6 py-6 sm:py-8 md:py-12 ">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 ">
         <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
@@ -172,10 +173,10 @@ export default function PokemonDetailsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-20 ">
         {/* Image Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="order-1 md:order-1">
-          <div className="bg-muted rounded-lg p-4 sm:p-6 h-full">
+          <div className="bg-muted rounded-xl p-4 sm:p-6 h-full">
             <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="h-full" spaceBetween={20}>
               {images.map((image, index) => (
                 <SwiperSlide key={index} className="flex flex-col items-center justify-center">
@@ -198,7 +199,6 @@ export default function PokemonDetailsPage() {
         >
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground">#{data.id.toString().padStart(3, '0')}</p>
               <h1 className="text-3xl md:text-4xl font-bold capitalize">{data.name}</h1>
               <div className="flex flex-wrap gap-2 mt-3">
                 {data.types.map((type) => (
@@ -223,7 +223,7 @@ export default function PokemonDetailsPage() {
                       <span className="text-sm font-medium">{formatStatName(stat.stat.name)}</span>
                       <span className="text-sm text-muted-foreground">{stat.base_stat}</span>
                     </div>
-                    <Progress value={stat.base_stat} max={255} className="h-2" />
+                    <Progress value={(stat.base_stat / 150) * 100} max={150} className="h-2" />
                   </div>
                 ))}
               </TabsContent>
@@ -237,6 +237,10 @@ export default function PokemonDetailsPage() {
                   <div>
                     <dt className="text-sm font-medium text-muted-foreground">Weight</dt>
                     <dd className="text-lg">{(data.weight / 10).toFixed(1)} kg</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm font-medium text-muted-foreground">Base Experience</dt>
+                    <dd className="text-lg">{data.base_experience}</dd>
                   </div>
                 </dl>
               </TabsContent>
