@@ -1,77 +1,51 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Heart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { loadFavorites, saveFavorites } from "@/lib/cookies"
-import { toast } from "@/hooks/use-toast"
+import { Button } from '@/components/ui/button';
+import { loadFavorites, saveFavorites } from '@/lib/cookies';
+import { Heart } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-interface FavoriteButtonProps {
-  pokemonName: string
-  onRemoveFavorite?: () => void
-}
-
-export default function FavoriteButton({ pokemonName, onRemoveFavorite }: FavoriteButtonProps) {
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+export default function FavoriteButton({ pokemonName, onRemoveFavorite }: { pokemonName: string; onRemoveFavorite?(): void }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // This needs to run client-side only
-    if (typeof window !== "undefined") {
-      const favorites = loadFavorites()
-      setIsFavorite(favorites.includes(pokemonName))
-      setIsLoading(false)
+    if (typeof window !== 'undefined') {
+      const favorites = loadFavorites();
+      setIsFavorite(favorites.includes(pokemonName));
+      setIsLoading(false);
     }
-  }, [pokemonName])
+  }, [pokemonName]);
 
   const toggleFavorite = () => {
-    if (typeof window === "undefined") return
+    const favorites = loadFavorites();
+    let newFavorites: string[];
 
-    const favorites = loadFavorites()
-    let newFavorites: string[]
-
-    if (isFavorite) {
-      newFavorites = favorites.filter((name) => name !== pokemonName)
-      toast({
-        title: "Removed from favorites",
-        description: `${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)} has been removed from your favorites.`,
-      })
-
-      // Call the callback if provided (for real-time removal in favorites page)
-      if (onRemoveFavorite) {
-        onRemoveFavorite()
-      }
-    } else {
-      newFavorites = [...favorites, pokemonName]
-      toast({
-        title: "Added to favorites",
-        description: `${pokemonName.charAt(0).toUpperCase() + pokemonName.slice(1)} has been added to your favorites.`,
-      })
+    if (!isFavorite) newFavorites = [...favorites, pokemonName];
+    else {
+      newFavorites = favorites.filter((name) => name !== pokemonName);
+      onRemoveFavorite && onRemoveFavorite();
     }
 
-    saveFavorites(newFavorites)
-    setIsFavorite(!isFavorite)
-
-    // Debug
-    console.log("Favorites saved:", newFavorites)
-  }
+    saveFavorites(newFavorites);
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <Button
-      variant={isFavorite ? "default" : "outline"}
+      variant={'ghost'}
       size="sm"
       disabled={isLoading}
       onClick={(e) => {
-        e.preventDefault()
-        e.stopPropagation()
-        toggleFavorite()
+        e.preventDefault();
+        e.stopPropagation();
+        toggleFavorite();
       }}
-      aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-      className="px-3 gap-1"
+      title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+      className="px-3 gap-2"
     >
-      <Heart className={`h-4 w-4 ${isFavorite ? "fill-white text-white" : ""}`} />
-      {isFavorite ? "Favorited" : "Favorite"}
+      <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
     </Button>
-  )
+  );
 }
-
