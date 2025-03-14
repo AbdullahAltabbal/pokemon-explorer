@@ -1,79 +1,61 @@
-"use client"
+'use client';
 
-import { useState, useRef, useEffect } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { Input } from "@/components/ui/input"
-import { X, Loader2 } from "lucide-react"
-import Image from "next/image"
+import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, X } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 
 interface Pokemon {
-  name: string
-  url: string
+  name: string;
+  url: string;
 }
 
 interface PokemonListResponse {
-  count: number
-  next: string | null
-  previous: string | null
-  results: Pokemon[]
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Pokemon[];
 }
 
 export default function SearchPokemon({ onClose }: { onClose: () => void }) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { data, isLoading } = useQuery<PokemonListResponse>({
-    queryKey: ["pokemonList"],
+    queryKey: ['pokemonList', searchTerm],
     queryFn: async () => {
-      const response = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151")
+      const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1302');
       if (!response.ok) {
-        throw new Error("Network response was not ok")
+        throw new Error('Network response was not ok');
       }
-      return response.json()
+      const data = await response.json();
+
+      const filteredResults = searchTerm
+        ? data.results.filter((pokemon: Pokemon) => pokemon.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        : data.results;
+      return {
+        ...data,
+        results: filteredResults,
+      };
     },
-  })
-
-  const filteredPokemon =
-    data?.results.filter((pokemon) => pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())) || []
+    enabled: searchTerm.length > 0, // Only run query when there's a search term
+  });
 
   useEffect(() => {
-    // Focus the input when component mounts
-    if (inputRef.current) {
-      inputRef.current.focus()
-    }
-
-    // Close dropdown when clicking outside
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
-
-  useEffect(() => {
-    setIsDropdownOpen(searchTerm.length > 0)
-  }, [searchTerm])
+    setIsDropdownOpen(searchTerm.length > 0);
+  }, [searchTerm]);
 
   const handlePokemonSelect = (pokemonName: string) => {
-    router.push(`/pokemon/${pokemonName}`)
-    setIsDropdownOpen(false)
-    onClose()
-  }
+    router.push(`/pokemon/${pokemonName}`);
+    setIsDropdownOpen(false);
+    onClose();
+  };
 
   return (
     <div className="relative w-full">
@@ -87,7 +69,7 @@ export default function SearchPokemon({ onClose }: { onClose: () => void }) {
           className="pr-10"
         />
         {searchTerm && (
-          <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setSearchTerm("")}>
+          <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setSearchTerm('')}>
             <X className="h-4 w-4 text-muted-foreground" />
           </button>
         )}
@@ -107,16 +89,13 @@ export default function SearchPokemon({ onClose }: { onClose: () => void }) {
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
-            ) : filteredPokemon.length > 0 ? (
+            ) : data && data?.results?.length > 0 ? (
               <ul>
-                {filteredPokemon.map((pokemon) => {
-                  const pokemonId = pokemon.url.split("/").filter(Boolean).pop()
+                {data?.results.map((pokemon) => {
+                  const pokemonId = pokemon.url.split('/').filter(Boolean).pop();
                   return (
                     <li key={pokemon.name}>
-                      <button
-                        className="flex items-center w-full p-2 hover:bg-muted text-left"
-                        onClick={() => handlePokemonSelect(pokemon.name)}
-                      >
+                      <button className="flex items-center w-full p-2 hover:bg-muted text-left" onClick={() => handlePokemonSelect(pokemon.name)}>
                         <div className="w-10 h-10 mr-3 relative">
                           <Image
                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`}
@@ -128,7 +107,7 @@ export default function SearchPokemon({ onClose }: { onClose: () => void }) {
                         <span className="capitalize">{pokemon.name}</span>
                       </button>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             ) : (
@@ -138,6 +117,5 @@ export default function SearchPokemon({ onClose }: { onClose: () => void }) {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }
-
