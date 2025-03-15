@@ -14,24 +14,25 @@
     "tabWidth": 2
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-progress": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.2",
+    "@tanstack/react-query": "latest",
+    "@tanstack/react-query-devtools": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "latest",
     "lucide-react": "^0.454.0",
     "next": "15.1.0",
     "next-themes": "latest",
     "react": "^19",
     "react-dom": "^19",
+    "swiper": "latest",
     "tailwind-merge": "^2.5.5",
-    "tailwindcss-animate": "^1.0.7",
-    "@tanstack/react-query": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "@tanstack/react-query-devtools": "latest",
-    "framer-motion": "latest",
-    "swiper": "latest"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^22",
